@@ -21,7 +21,7 @@ function App() {
     highlightPostTag: "__/ais-highlight__",
     limit: 25,
     offset: 0,
-    filter: ["event_entity_details_id=8339502", "tag_id=9442"],
+    filter: ["event_entity_details_id=8339502", "tag_id=9620"],
   };
 
   const headers = {
