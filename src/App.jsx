@@ -300,7 +300,7 @@ function App() {
         sx={{
           p: 3,
           mb: 3,
-          background: "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+          background: "linear-gradient(135deg, #aa2605ff 0%, #e76a5cff 100%)",
         }}
       >
         <Box
