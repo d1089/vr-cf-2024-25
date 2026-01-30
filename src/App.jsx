@@ -437,7 +437,7 @@ function App() {
               <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
                 <CurrencyRupee sx={{ color: "#667eea", mr: 1 }} />
                 <Typography variant="caption" color="text.secondary">
-                  Total Target
+                  Centre Target
                 </Typography>
               </Box>
               <Typography variant="h6" sx={{ fontWeight: "bold" }}>
