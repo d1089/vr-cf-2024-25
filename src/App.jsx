@@ -58,15 +58,15 @@ function App() {
 
   // Centre to tag_id mapping - Add more centres as needed
   const centreOptions = [
-    { centre: "OLH", tagId: "11232", label: "OLH" },
+    { centre: "OLH", tagId: "11528", label: "OLH" },
     {
       centre: "VSR",
-      tagId: "11235",
+      tagId: "11531",
       label: "VSR",
     },
-    { centre: "VAT", tagId: "11234", label: "VAT" },
-    { centre: "SFC", tagId: "11233", label: "SFC" },
-    { centre: "COGF", tagId: "11231", label: "COGF" },
+    { centre: "VAT", tagId: "11530", label: "VAT" },
+    { centre: "SFC", tagId: "11529", label: "SFC" },
+    { centre: "COGF", tagId: "11527", label: "COGF" },
   ];
 
   const headers = {
