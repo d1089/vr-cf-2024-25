@@ -20,6 +20,7 @@ import {
   Button,
   IconButton,
   Tooltip,
+  Chip,
 } from "@mui/material";
 import { DataGrid } from "@mui/x-data-grid";
 import {
@@ -41,6 +42,9 @@ import PeopleIcon from "@mui/icons-material/People";
 import { CurrencyRupee } from "@mui/icons-material";
 import RefreshIcon from "@mui/icons-material/Refresh";
 import FilterListIcon from "@mui/icons-material/FilterList";
+import StarIcon from "@mui/icons-material/Star";
+import GitHubIcon from "@mui/icons-material/GitHub";
+import VisibilityIcon from "@mui/icons-material/Visibility";
 
 function App() {
   const [stats, setStats] = useState([]);
@@ -51,10 +55,14 @@ function App() {
   const [selectedCentre, setSelectedCentre] = useState("VSR");
   const [customTagId, setCustomTagId] = useState("");
   const [eventEntityId, setEventEntityId] = useState("8970753");
+  const [visitCount, setVisitCount] = useState(0);
 
   const theme = useTheme();
   const isMobile = useMediaQuery(theme.breakpoints.down("sm"));
   const isTablet = useMediaQuery(theme.breakpoints.down("md"));
+
+  // GitHub repo info - Update with your actual repo URL
+  const githubRepoUrl = "https://github.com/d1089/mum-uandi-cf-dashboard";
 
   // Centre to tag_id mapping - Add more centres as needed
   const centreOptions = [
@@ -77,6 +85,17 @@ function App() {
     Origin: "https://uandiforeverychild.ketto.org",
     Referer: "https://uandiforeverychild.ketto.org/",
   };
+
+  // Initialize visit counter
+  useEffect(() => {
+    const currentCount = parseInt(
+      localStorage.getItem("visitCount") || "0",
+      10,
+    );
+    const newCount = currentCount + 1;
+    localStorage.setItem("visitCount", newCount.toString());
+    setVisitCount(newCount);
+  }, []);
 
   const getRealData = async (tagId, entityId = eventEntityId) => {
     try {
@@ -174,9 +193,6 @@ function App() {
       type: "number",
       flex: 0.8,
       minWidth: 120,
-      // valueFormatter: (params) => {
-      //   return new Intl.NumberFormat("en-IN").format(params);
-      // },
     },
     {
       field: "raisedAmt",
@@ -184,9 +200,6 @@ function App() {
       type: "number",
       flex: 0.8,
       minWidth: 120,
-      // valueFormatter: (params) => {
-      //   return new Intl.NumberFormat("en-IN").format(params);
-      // },
     },
     {
       field: "percentageRaised",
@@ -194,7 +207,6 @@ function App() {
       type: "number",
       flex: 0.7,
       minWidth: 100,
-      // valueFormatter: (params) => `${params}%`,
     },
     {
       field: "supporters",
@@ -253,7 +265,7 @@ function App() {
     .sort((a, b) => b.raisedAmt - a.raisedAmt)
     .slice(0, 5)
     .map((item) => ({
-      name: item.fullName.split(" ").slice(0, 2).join(" "), // First two names for better readability
+      name: item.fullName.split(" ").slice(0, 2).join(" "),
       raised: item.raisedAmt,
       target: item.targetAmt,
     }));
@@ -290,338 +302,413 @@ function App() {
   }
 
   return (
-    <Container
-      maxWidth="xl"
-      sx={{ py: 3, minHeight: "100vh", bgcolor: "#f5f5f5" }}
-    >
-      {/* Header */}
+    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f5f5" }}>
+      {/* Sticky Header */}
       <Paper
-        elevation={2}
+        elevation={3}
         sx={{
-          p: 3,
-          mb: 3,
+          position: "sticky",
+          top: 0,
+          zIndex: 1100,
           background: "linear-gradient(135deg, #aa2605ff 0%, #e76a5cff 100%)",
+          borderRadius: 0,
         }}
       >
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Box>
-            <Typography
-              variant={isMobile ? "h5" : "h4"}
-              sx={{ color: "white", fontWeight: "bold", mb: 1 }}
-            >
-              U&I Mumbai CF 2025-26 Analysis
-            </Typography>
-            <Typography variant="body2" sx={{ color: "rgba(255,255,255,0.9)" }}>
-              {selectedCentre === "custom"
-                ? "Donation Tracking Dashboard - Custom Centre"
-                : `Donation Tracking Dashboard - ${centreOptions.find((c) => c.centre === selectedCentre)?.centre || ""}`}
-            </Typography>
-          </Box>
-          <Tooltip title="Refresh Data">
-            <IconButton
-              onClick={handleRefresh}
+        <Container maxWidth="xl">
+          <Box
+            sx={{
+              py: isMobile ? 1.5 : 2,
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            {/* Left Section - Title */}
+            <Box sx={{ flex: "1 1 auto", minWidth: 0 }}>
+              <Typography
+                variant={isMobile ? "body1" : "h6"}
+                sx={{
+                  color: "white",
+                  fontWeight: "bold",
+                  mb: isMobile ? 0 : 0.5,
+                  whiteSpace: isMobile ? "nowrap" : "normal",
+                  overflow: isMobile ? "hidden" : "visible",
+                  textOverflow: isMobile ? "ellipsis" : "clip",
+                }}
+              >
+                U&I Mumbai CF 2025-26
+              </Typography>
+              {!isMobile && (
+                <Typography
+                  variant="caption"
+                  sx={{ color: "rgba(255,255,255,0.9)", display: "block" }}
+                >
+                  {selectedCentre === "custom"
+                    ? "Custom Centre"
+                    : centreOptions.find((c) => c.centre === selectedCentre)
+                        ?.centre || ""}
+                </Typography>
+              )}
+            </Box>
+
+            {/* Right Section - Actions and Stats */}
+            <Box
               sx={{
-                bgcolor: "rgba(255,255,255,0.2)",
-                color: "white",
-                "&:hover": { bgcolor: "rgba(255,255,255,0.3)" },
+                display: "flex",
+                alignItems: "center",
+                gap: isMobile ? 1 : 2,
+                flexWrap: "wrap",
               }}
             >
-              <RefreshIcon />
-            </IconButton>
-          </Tooltip>
-        </Box>
-      </Paper>
+              {/* Visit Counter */}
+              <Chip
+                icon={
+                  <VisibilityIcon
+                    sx={{ fontSize: isMobile ? 14 : 16, color: "white" }}
+                  />
+                }
+                label={`${visitCount.toLocaleString()} visits`}
+                size="small"
+                sx={{
+                  bgcolor: "rgba(255, 255, 255, 0.2)",
+                  color: "white",
+                  fontWeight: 600,
+                  fontSize: isMobile ? "0.7rem" : "0.75rem",
+                  height: isMobile ? 24 : 28,
+                  "& .MuiChip-icon": {
+                    color: "white",
+                  },
+                  backdropFilter: "blur(10px)",
+                }}
+              />
 
-      {error && (
-        <Alert severity="error" sx={{ mb: 3 }}>
-          {error}
-        </Alert>
-      )}
-
-      {/* Filter Section */}
-      <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
-        <Box
-          sx={{
-            display: "flex",
-            alignItems: "center",
-            gap: 2,
-            flexWrap: "wrap",
-          }}
-        >
-          <FilterListIcon sx={{ color: "#667eea" }} />
-          <Typography variant="h6" sx={{ fontWeight: "bold", flexGrow: 1 }}>
-            Filters
-          </Typography>
-        </Box>
-        <Grid container spacing={2} sx={{ mt: 1 }}>
-          <Grid item xs={12} sm={6} md={4}>
-            <FormControl fullWidth size="small">
-              <InputLabel>Select Centre</InputLabel>
-              <Select
-                value={selectedCentre}
-                label="Select Centre"
-                onChange={handleCentreChange}
-              >
-                {centreOptions.map((option) => (
-                  <MenuItem key={option.centre} value={option.centre}>
-                    {option.label}
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
-          </Grid>
-
-          {selectedCentre === "custom" && (
-            <Grid item xs={12} sm={6} md={4}>
-              <Box sx={{ display: "flex", gap: 1 }}>
-                <TextField
-                  fullWidth
-                  size="small"
-                  label="Enter Custom Tag ID"
-                  value={customTagId}
-                  onChange={(e) => setCustomTagId(e.target.value)}
-                  placeholder="e.g., 11235"
-                />
+              {/* GitHub Star Button */}
+              <Tooltip title="Star on GitHub">
                 <Button
                   variant="contained"
-                  onClick={handleCustomTagSubmit}
-                  disabled={!customTagId.trim()}
+                  size="small"
+                  startIcon={
+                    !isMobile && (
+                      <GitHubIcon sx={{ fontSize: isMobile ? 14 : 16 }} />
+                    )
+                  }
+                  endIcon={<StarIcon sx={{ fontSize: isMobile ? 14 : 16 }} />}
+                  href={githubRepoUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
                   sx={{
-                    background:
-                      "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    bgcolor: "rgba(255, 255, 255, 0.2)",
+                    color: "white",
+                    fontSize: isMobile ? "0.7rem" : "0.75rem",
+                    py: isMobile ? 0.5 : 0.6,
+                    px: isMobile ? 1 : 1.5,
+                    minWidth: isMobile ? "auto" : 100,
+                    "&:hover": {
+                      bgcolor: "rgba(255, 255, 255, 0.3)",
+                      transform: "translateY(-2px)",
+                    },
+                    transition: "all 0.3s ease",
+                    textTransform: "none",
+                    fontWeight: 600,
+                    backdropFilter: "blur(10px)",
                   }}
                 >
-                  Apply
+                  {isMobile ? <GitHubIcon sx={{ fontSize: 16 }} /> : "Star"}
                 </Button>
-              </Box>
-            </Grid>
-          )}
+              </Tooltip>
 
-          {/* <Grid item xs={12} sm={6} md={4}>
+              {/* Refresh Button */}
+              <Tooltip title="Refresh Data">
+                <IconButton
+                  onClick={handleRefresh}
+                  size="small"
+                  sx={{
+                    bgcolor: "rgba(255,255,255,0.2)",
+                    color: "white",
+                    "&:hover": {
+                      bgcolor: "rgba(255,255,255,0.3)",
+                      transform: "rotate(180deg)",
+                    },
+                    transition: "all 0.5s ease",
+                  }}
+                >
+                  <RefreshIcon sx={{ fontSize: isMobile ? 18 : 20 }} />
+                </IconButton>
+              </Tooltip>
+            </Box>
+          </Box>
+        </Container>
+      </Paper>
+
+      {/* Main Content */}
+      <Container maxWidth="xl" sx={{ py: 3 }}>
+        {error && (
+          <Alert severity="error" sx={{ mb: 3 }}>
+            {error}
+          </Alert>
+        )}
+
+        {/* Filter Section */}
+        <Paper elevation={2} sx={{ p: 2, mb: 3 }}>
+          <Box
+            sx={{
+              display: "flex",
+              alignItems: "center",
+              gap: 2,
+              flexWrap: "wrap",
+            }}
+          >
+            <FilterListIcon sx={{ color: "#667eea" }} />
+            <Typography variant="h6" sx={{ fontWeight: "bold", flexGrow: 1 }}>
+              Filters
+            </Typography>
+          </Box>
+          <Grid container spacing={2} sx={{ mt: 1 }}>
+            <Grid item xs={12} sm={6} md={4}>
+              <FormControl fullWidth size="small">
+                <InputLabel>Select Centre</InputLabel>
+                <Select
+                  value={selectedCentre}
+                  label="Select Centre"
+                  onChange={handleCentreChange}
+                >
+                  {centreOptions.map((option) => (
+                    <MenuItem key={option.centre} value={option.centre}>
+                      {option.label}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            </Grid>
+
+            {selectedCentre === "custom" && (
+              <Grid item xs={12} sm={6} md={4}>
+                <Box sx={{ display: "flex", gap: 1 }}>
+                  <TextField
+                    fullWidth
+                    size="small"
+                    label="Enter Custom Tag ID"
+                    value={customTagId}
+                    onChange={(e) => setCustomTagId(e.target.value)}
+                    placeholder="e.g., 11235"
+                  />
+                  <Button
+                    variant="contained"
+                    onClick={handleCustomTagSubmit}
+                    disabled={!customTagId.trim()}
+                    sx={{
+                      background:
+                        "linear-gradient(135deg, #667eea 0%, #764ba2 100%)",
+                    }}
+                  >
+                    Apply
+                  </Button>
+                </Box>
+              </Grid>
+            )}
+          </Grid>
+        </Paper>
+
+        {/* Summary Cards */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <CurrencyRupee sx={{ color: "#667eea", mr: 1 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    Centre Target
+                  </Typography>
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  ₹
+                  {new Intl.NumberFormat("en-IN").format(totals.totalTargetAmt)}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <TrendingUpIcon sx={{ color: "#00C49F", mr: 1 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    Total Raised
+                  </Typography>
+                </Box>
+                <Typography
+                  variant="h6"
+                  sx={{ fontWeight: "bold", color: "#00C49F" }}
+                >
+                  ₹
+                  {new Intl.NumberFormat("en-IN").format(totals.totalRaisedAmt)}
+                </Typography>
+                <Typography variant="caption" color="text.secondary">
+                  {overallPercentage}% of target
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <PeopleIcon sx={{ color: "#FF8042", mr: 1 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    Total Supporters
+                  </Typography>
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  {new Intl.NumberFormat("en-IN").format(
+                    totals.totalSupporters,
+                  )}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+
+          <Grid item xs={12} sm={6} md={3}>
+            <Card elevation={3}>
+              <CardContent>
+                <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
+                  <CurrencyRupee sx={{ color: "#FFBB28", mr: 1 }} />
+                  <Typography variant="caption" color="text.secondary">
+                    Remaining
+                  </Typography>
+                </Box>
+                <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+                  ₹
+                  {new Intl.NumberFormat("en-IN").format(
+                    Math.max(0, totals.totalTargetAmt - totals.totalRaisedAmt),
+                  )}
+                </Typography>
+              </CardContent>
+            </Card>
+          </Grid>
+        </Grid>
+
+        {/* Charts */}
+        <Grid container spacing={2} sx={{ mb: 3 }}>
+          <Grid item xs={12} md={7}>
+            <Paper elevation={3} sx={{ p: 2 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+                Top 5 Fundraisers
+              </Typography>
+              <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+                <BarChart data={top5Fundraisers}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis
+                    dataKey="name"
+                    angle={-15}
+                    textAnchor="end"
+                    height={80}
+                  />
+                  <YAxis />
+                  <RechartsTooltip
+                    formatter={(value) =>
+                      `₹${new Intl.NumberFormat("en-IN").format(value)}`
+                    }
+                  />
+                  <Legend />
+                  <Bar dataKey="raised" fill="#00C49F" name="Raised Amount" />
+                  <Bar dataKey="target" fill="#667eea" name="Target Amount" />
+                </BarChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+
+          <Grid item xs={12} md={5}>
+            <Paper elevation={3} sx={{ p: 2 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
+                Overall Progress
+              </Typography>
+              <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
+                <PieChart>
+                  <Pie
+                    data={pieData}
+                    cx="50%"
+                    cy="50%"
+                    labelLine={false}
+                    label={({ name, percent }) =>
+                      `${name}: ${(percent * 100).toFixed(1)}%`
+                    }
+                    outerRadius={isMobile ? 70 : 90}
+                    fill="#8884d8"
+                    dataKey="value"
+                  >
+                    {pieData.map((entry, index) => (
+                      <Cell
+                        key={`cell-${index}`}
+                        fill={COLORS[index % COLORS.length]}
+                      />
+                    ))}
+                  </Pie>
+                  <RechartsTooltip
+                    formatter={(value) =>
+                      `₹${new Intl.NumberFormat("en-IN").format(value)}`
+                    }
+                  />
+                </PieChart>
+              </ResponsiveContainer>
+            </Paper>
+          </Grid>
+        </Grid>
+
+        {/* Data Table */}
+        <Paper elevation={3} sx={{ p: 2 }}>
+          <Box
+            sx={{
+              display: "flex",
+              justifyContent: "space-between",
+              alignItems: "center",
+              mb: 2,
+              flexWrap: "wrap",
+              gap: 2,
+            }}
+          >
+            <Typography variant="h6" sx={{ fontWeight: "bold" }}>
+              Fundraiser Details ({filteredRows.length} records)
+            </Typography>
             <TextField
-              fullWidth
+              label="Search"
               size="small"
-              label="Event Entity ID"
-              value={eventEntityId}
-              onChange={(e) => setEventEntityId(e.target.value)}
-              onBlur={() => {
-                if (selectedCentre === "custom" && customTagId.trim()) {
-                  getRealData(customTagId, eventEntityId);
-                } else if (selectedCentre !== "custom") {
-                  const selected = centreOptions.find(
-                    (c) => c.centre === selectedCentre,
-                  );
-                  if (selected) {
-                    getRealData(selected.tagId, eventEntityId);
-                  }
-                }
+              variant="outlined"
+              value={searchTerm}
+              onChange={handleSearchChange}
+              sx={{ minWidth: isMobile ? "100%" : 300 }}
+            />
+          </Box>
+          <Box sx={{ height: isMobile ? 400 : 500, width: "100%" }}>
+            <DataGrid
+              rows={filteredRows}
+              columns={columns}
+              initialState={{
+                pagination: {
+                  paginationModel: {
+                    pageSize: 10,
+                  },
+                },
+              }}
+              pageSizeOptions={[5, 10, 20, 50]}
+              disableRowSelectionOnClick
+              sx={{
+                "& .MuiDataGrid-cell": {
+                  fontSize: isMobile ? "0.75rem" : "0.875rem",
+                },
+                "& .MuiDataGrid-columnHeaders": {
+                  backgroundColor: "#f5f5f5",
+                  fontWeight: "bold",
+                },
               }}
             />
-          </Grid> */}
-        </Grid>
-      </Paper>
-
-      {/* Summary Cards */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} sm={6} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <CurrencyRupee sx={{ color: "#667eea", mr: 1 }} />
-                <Typography variant="caption" color="text.secondary">
-                  Centre Target
-                </Typography>
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                ₹{new Intl.NumberFormat("en-IN").format(totals.totalTargetAmt)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <TrendingUpIcon sx={{ color: "#00C49F", mr: 1 }} />
-                <Typography variant="caption" color="text.secondary">
-                  Total Raised
-                </Typography>
-              </Box>
-              <Typography
-                variant="h6"
-                sx={{ fontWeight: "bold", color: "#00C49F" }}
-              >
-                ₹{new Intl.NumberFormat("en-IN").format(totals.totalRaisedAmt)}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {overallPercentage}% of target
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <PeopleIcon sx={{ color: "#FF8042", mr: 1 }} />
-                <Typography variant="caption" color="text.secondary">
-                  Total Supporters
-                </Typography>
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                {new Intl.NumberFormat("en-IN").format(totals.totalSupporters)}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        <Grid item xs={12} sm={6} md={3}>
-          <Card elevation={3}>
-            <CardContent>
-              <Box sx={{ display: "flex", alignItems: "center", mb: 1 }}>
-                <CurrencyRupee sx={{ color: "#FFBB28", mr: 1 }} />
-                <Typography variant="caption" color="text.secondary">
-                  Remaining
-                </Typography>
-              </Box>
-              <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-                ₹
-                {new Intl.NumberFormat("en-IN").format(
-                  Math.max(0, totals.totalTargetAmt - totals.totalRaisedAmt),
-                )}
-              </Typography>
-            </CardContent>
-          </Card>
-        </Grid>
-      </Grid>
-
-      {/* Charts */}
-      <Grid container spacing={2} sx={{ mb: 3 }}>
-        <Grid item xs={12} md={7}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-              Top 5 Fundraisers
-            </Typography>
-            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
-              <BarChart data={top5Fundraisers}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="name"
-                  angle={-15}
-                  textAnchor="end"
-                  height={80}
-                />
-                <YAxis />
-                <RechartsTooltip
-                  formatter={(value) =>
-                    `₹${new Intl.NumberFormat("en-IN").format(value)}`
-                  }
-                />
-                <Legend />
-                <Bar dataKey="raised" fill="#00C49F" name="Raised Amount" />
-                <Bar dataKey="target" fill="#667eea" name="Target Amount" />
-              </BarChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-
-        <Grid item xs={12} md={5}>
-          <Paper elevation={3} sx={{ p: 2 }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: "bold" }}>
-              Overall Progress
-            </Typography>
-            <ResponsiveContainer width="100%" height={isMobile ? 250 : 300}>
-              <PieChart>
-                <Pie
-                  data={pieData}
-                  cx="50%"
-                  cy="50%"
-                  labelLine={false}
-                  label={({ name, percent }) =>
-                    `${name}: ${(percent * 100).toFixed(1)}%`
-                  }
-                  outerRadius={isMobile ? 70 : 90}
-                  fill="#8884d8"
-                  dataKey="value"
-                >
-                  {pieData.map((entry, index) => (
-                    <Cell
-                      key={`cell-${index}`}
-                      fill={COLORS[index % COLORS.length]}
-                    />
-                  ))}
-                </Pie>
-                <RechartsTooltip
-                  formatter={(value) =>
-                    `₹${new Intl.NumberFormat("en-IN").format(value)}`
-                  }
-                />
-              </PieChart>
-            </ResponsiveContainer>
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* Data Table */}
-      <Paper elevation={3} sx={{ p: 2 }}>
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            mb: 2,
-            flexWrap: "wrap",
-            gap: 2,
-          }}
-        >
-          <Typography variant="h6" sx={{ fontWeight: "bold" }}>
-            Fundraiser Details ({filteredRows.length} records)
-          </Typography>
-          <TextField
-            label="Search"
-            size="small"
-            variant="outlined"
-            value={searchTerm}
-            onChange={handleSearchChange}
-            sx={{ minWidth: isMobile ? "100%" : 300 }}
-          />
-        </Box>
-        <Box sx={{ height: isMobile ? 400 : 500, width: "100%" }}>
-          <DataGrid
-            rows={filteredRows}
-            columns={columns}
-            initialState={{
-              pagination: {
-                paginationModel: {
-                  pageSize: 10,
-                },
-              },
-            }}
-            pageSizeOptions={[5, 10, 20, 50]}
-            disableRowSelectionOnClick
-            sx={{
-              "& .MuiDataGrid-cell": {
-                fontSize: isMobile ? "0.75rem" : "0.875rem",
-              },
-              "& .MuiDataGrid-columnHeaders": {
-                backgroundColor: "#f5f5f5",
-                fontWeight: "bold",
-              },
-            }}
-          />
-        </Box>
-      </Paper>
-    </Container>
+          </Box>
+        </Paper>
+      </Container>
+    </Box>
   );
 }
 
